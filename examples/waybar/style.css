@@ -1,0 +1,43 @@
+/* w3ld-waybar — example styles (Dracula). Merge into ~/.config/waybar/style.css. */
+
+/* ---- CFFI plugin workspaces (cffi/w3ld-workspaces) ----
+ * Each workspace is a button named #wsN with an active / occupied / empty
+ * class, so per-state CSS works. Add more #wsN selectors to match "count". */
+#ws1, #ws2, #ws3, #ws4, #ws5, #ws6, #ws7, #ws8, #ws9 {
+    padding: 0 8px;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+}
+#ws1.empty, #ws2.empty, #ws3.empty, #ws4.empty, #ws5.empty,
+#ws6.empty, #ws7.empty, #ws8.empty, #ws9.empty {
+    color: #6272a4;                 /* comment: no windows, not focused */
+}
+#ws1.occupied, #ws2.occupied, #ws3.occupied, #ws4.occupied, #ws5.occupied,
+#ws6.occupied, #ws7.occupied, #ws8.occupied, #ws9.occupied {
+    color: #f8f8f2;                 /* foreground: has windows */
+}
+#ws1.active, #ws2.active, #ws3.active, #ws4.active, #ws5.active,
+#ws6.active, #ws7.active, #ws8.active, #ws9.active {
+    color: #bd93f9;                 /* purple: currently focused */
+    border-bottom: 2px solid #bd93f9;
+}
+
+/* ---- CLI adapter workspaces (custom/w3ld-workspaces), the text alternative ----
+ * .focused/.unfocused reflect whether this output owns the focused window; the
+ * active workspace is bold via markup, not a class. */
+#custom-w3ld-workspaces {
+    padding: 0 8px;
+    color: #bd93f9;
+}
+#custom-w3ld-workspaces.unfocused {
+    color: #6272a4;
+}
+
+/* ---- Focused window title (custom/w3ld-window) ---- */
+#custom-w3ld-window {
+    padding: 0 8px;
+    color: #f8f8f2;
+}
+#custom-w3ld-window.empty {
+    color: #6272a4;
+}

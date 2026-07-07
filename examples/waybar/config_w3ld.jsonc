@@ -1,0 +1,37 @@
+// w3ld-waybar — example waybar modules.
+//
+// Merge these into ~/.config/waybar/config(.jsonc) and add the module names to a
+// "modules-left"/"modules-center"/"modules-right" array. Run `w3ldctl outputs`
+// to see monitor connector names.
+{
+    // ---- Workspaces (recommended): the CFFI plugin. One native module drawing
+    //      a clickable button per workspace, styled active / occupied / empty —
+    //      the distinction ext/workspaces can't express. Set module_path to the
+    //      installed plugin; "output" pins it to a monitor (omit to follow the
+    //      focused output); "count" is how many buttons to always show.
+    "cffi/w3ld-workspaces": {
+        "module_path": "/usr/local/lib/w3ld-waybar/w3ld-workspaces.so",
+        "output": "DP-1",
+        "count": 9
+    },
+
+    // ---- Focused window title (CLI adapter as a custom module). Follows the
+    //      focused output; pass a connector name as a third argument to pin it.
+    "custom/w3ld-window": {
+        "exec": "w3ldctl subscribe | w3ld-waybar window",
+        "return-type": "json",
+        "escape": false,
+        "max-length": 80
+    },
+
+    // ---- Workspaces alternative: the CLI adapter as one text module. Not
+    //      individually clickable; the active workspace is bold and scrolling
+    //      switches workspaces. escape:false keeps the bold markup.
+    "custom/w3ld-workspaces": {
+        "exec": "w3ldctl subscribe | w3ld-waybar workspaces DP-1",
+        "return-type": "json",
+        "escape": false,
+        "on-scroll-up": "w3ldctl workspace-next",
+        "on-scroll-down": "w3ldctl workspace-prev"
+    }
+}
