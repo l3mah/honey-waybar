@@ -24,6 +24,20 @@
         "max-length": 80
     },
 
+    // ---- Gamma / night light: drives w3ld's integrated `w3ldctl gamma`.
+    //      Click toggles warm/neutral; scroll adjusts brightness. Emits the
+    //      class on/off for styling. Run `w3ld-gamma init` from your w3ld init
+    //      file to start neutral and in sync with the bar.
+    "custom/w3ld-gamma": {
+        "exec": "w3ld-gamma",
+        "interval": 2,
+        "return-type": "json",
+        "tooltip": false,
+        "on-click": "w3ld-gamma toggle",
+        "on-scroll-up": "w3ld-gamma gamma-up",
+        "on-scroll-down": "w3ld-gamma gamma-down"
+    },
+
     // ---- Workspaces alternative: the CLI adapter as one text module. Not
     //      individually clickable; the active workspace is bold and scrolling
     //      switches workspaces. escape:false keeps the bold markup.

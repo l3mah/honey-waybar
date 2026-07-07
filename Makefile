@@ -2,7 +2,7 @@
 #
 #   make               build the CLI adapter (w3ld-waybar)  → the window module
 #   make cffi          build the waybar CFFI plugin (needs gtk+-3.0) → workspaces
-#   make install       install the CLI adapter + example waybar config/style
+#   make install       install the CLI adapter + gamma script + example config/style
 #   make install-cffi  install the CFFI plugin
 #   make clean
 
@@ -29,6 +29,7 @@ $(PLUGIN): src/w3ld-workspaces.c src/waybar_cffi_module.h src/status_feed.h src/
 
 install: w3ld-waybar
 	install -Dm755 w3ld-waybar $(DESTDIR)$(PREFIX)/bin/w3ld-waybar
+	install -Dm755 scripts/w3ld-gamma.sh $(DESTDIR)$(PREFIX)/bin/w3ld-gamma
 	install -Dm644 examples/waybar/config_w3ld.jsonc \
 		$(DESTDIR)$(DATADIR)/w3ld-waybar/examples/config_w3ld.jsonc
 	install -Dm644 examples/waybar/style.css \

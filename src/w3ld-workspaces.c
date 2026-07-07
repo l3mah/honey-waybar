@@ -6,8 +6,10 @@
  * clickable, individually styleable button inside one module — with the
  * active / occupied / empty distinction the ext-workspace protocol can't express.
  *
- * Each button is named "ws{N}" and carries the style class active, occupied, or
- * empty. Clicking a button runs `w3ldctl workspace N`.
+ * Buttons are plain `button` children of the #w3ld-workspaces box, each carrying
+ * the style class active, occupied, or empty — so one generic rule set
+ * (#w3ld-workspaces button.active, ...) styles them all by state, no
+ * per-workspace selectors. Clicking a button runs `w3ldctl workspace N`.
  *
  * Config keys (waybar module JSON):
  *   output   connector to track (e.g. "DP-1"); omit to follow the focused output
@@ -143,13 +145,15 @@ void *wbcffi_init (
 	gtk_widget_set_name(box, "w3ld-workspaces");
 
 	for (int index = 0; index < self->count; index++) {
-		char label[8], name[16];
+		char label[8];
 		snprintf(label, sizeof label, "%d", index + 1);
-		snprintf(name, sizeof name, "ws%d", index + 1);
 
+		/* Buttons are plain `button` children of #w3ld-workspaces carrying an
+		 * active / occupied / empty class, so one generic rule set styles all
+		 * of them by state (like a native #workspaces button.active) — no
+		 * per-workspace selectors needed. */
 		GtkWidget *button = gtk_button_new_with_label(label);
 		gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
-		gtk_widget_set_name(button, name);
 		gtk_style_context_add_class(gtk_widget_get_style_context(button), "empty");
 		g_object_set_data(G_OBJECT(button), "w3ld-ws", GINT_TO_POINTER(index + 1));
 		g_signal_connect(button, "clicked",
