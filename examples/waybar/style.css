@@ -44,13 +44,18 @@
     color: #6272a4;
 }
 
-/* ---- Gamma / night light (custom/w3ld-gamma) ---- */
-#custom-w3ld-gamma {
+/* ---- Gamma / night light (cffi/w3ld-gamma) ----
+ * Classes: day (neutral) / night (warm), plus override when a manual
+ * temperature is in effect for the active mode. */
+#w3ld-gamma {
     padding: 0 8px;
 }
-#custom-w3ld-gamma.on {
-    color: #ffb86c;                 /* orange: warm/active */
+#w3ld-gamma.day {
+    color: #bd93f9;                 /* purple: neutral / day */
 }
-#custom-w3ld-gamma.off {
-    color: #6272a4;                 /* comment: neutral */
+#w3ld-gamma.night {
+    color: #ffb86c;                 /* orange: warm / night */
+}
+#w3ld-gamma.override {
+    border-bottom: 2px solid #ffb86c;
 }

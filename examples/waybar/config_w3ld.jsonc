@@ -24,18 +24,25 @@
         "max-length": 80
     },
 
-    // ---- Gamma / night light: drives w3ld's integrated `w3ldctl gamma`.
-    //      Click toggles warm/neutral; scroll adjusts brightness. Emits the
-    //      class on/off for styling. Run `w3ld-gamma init` from your w3ld init
-    //      file to start neutral and in sync with the bar.
-    "custom/w3ld-gamma": {
-        "exec": "w3ld-gamma",
-        "interval": 2,
-        "return-type": "json",
-        "tooltip": false,
-        "on-click": "w3ld-gamma toggle",
-        "on-scroll-up": "w3ld-gamma gamma-up",
-        "on-scroll-down": "w3ld-gamma gamma-down"
+    // ---- Gamma / night light (CFFI plugin): a day/night toggle over w3ld's
+    //      integrated `w3ldctl gamma`. Click toggles day<->night; scroll adjusts
+    //      brightness. w3ld broadcasts every gamma change, so the module reflects
+    //      the live state however it was driven (this module, a hotkey, or a
+    //      direct command). Temperature is the mode's identity (config only);
+    //      brightness is the retained per-mode trim. format tokens: {icon}
+    //      {temperature} {brightness} — omit any to hide it. Styling classes:
+    //      day / night, plus override when a manual temperature is in effect.
+    //      The brightness clamp is server-side: `w3ldctl gamma min|max <pct>`.
+    "cffi/w3ld-gamma": {
+        "module_path": "/usr/local/lib/w3ld-waybar/w3ld-gamma.so",
+        "temperature-day": 6500,
+        "temperature-night": 4000,
+        "brightness-day": 100,
+        "brightness-night": 60,
+        "step": 5,
+        "icon-day": "☀",
+        "icon-night": "☾",
+        "format": "{icon} {temperature}K {brightness}%"
     },
 
     // ---- Workspaces alternative: the CLI adapter as one text module. Not
