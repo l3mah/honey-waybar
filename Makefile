@@ -1,7 +1,8 @@
 # w3ld-waybar — waybar adapters for w3ld's status stream.
 #
-#   make               build the CLI adapter (w3ld-waybar)  → the window module
-#   make cffi          build the CFFI plugins (needs gtk+-3.0) → workspaces, gamma
+#   make               build the CLI adapter (w3ld-waybar)  → text workspaces
+#   make cffi          build the CFFI plugins (needs gtk+-3.0) → workspaces,
+#                      window, gamma
 #   make install       install the CLI adapter + example config/style
 #   make install-cffi  install the CFFI plugins
 #   make clean
@@ -13,7 +14,7 @@ PREFIX ?= /usr/local
 DATADIR = $(PREFIX)/share
 LIBDIR  = $(PREFIX)/lib
 
-PLUGINS    = w3ld-workspaces.so w3ld-gamma.so
+PLUGINS    = w3ld-workspaces.so w3ld-window.so w3ld-gamma.so
 GTK_CFLAGS = $(shell pkg-config --cflags gtk+-3.0)
 GTK_LIBS   = $(shell pkg-config --libs gtk+-3.0)
 

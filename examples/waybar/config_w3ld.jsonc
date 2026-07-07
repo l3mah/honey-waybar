@@ -15,12 +15,15 @@
         "count": 9
     },
 
-    // ---- Focused window title (CLI adapter as a custom module). Follows the
-    //      focused output; pass a connector name as a third argument to pin it.
-    "custom/w3ld-window": {
-        "exec": "w3ldctl subscribe | w3ld-waybar window",
-        "return-type": "json",
-        "escape": false,
+    // ---- Focused window title (CFFI plugin): connects to the status socket
+    //      directly (no piped subprocess) and shows the focused window's title,
+    //      falling back to its app-id, with the app-id in the tooltip. "output"
+    //      pins it to a monitor (omit to follow the focused window);
+    //      "max-length" ellipsizes long titles. (A no-CFFI alternative is the
+    //      CLI adapter as a custom module: "exec": "w3ldctl subscribe |
+    //      w3ld-waybar window".)
+    "cffi/w3ld-window": {
+        "module_path": "/usr/local/lib/w3ld-waybar/w3ld-window.so",
         "max-length": 80
     },
 

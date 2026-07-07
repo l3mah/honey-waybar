@@ -14,16 +14,23 @@ modules *can't* express:
 - a **night-light control** for w3ld's integrated gamma (`w3ldctl gamma`) — a
   day/night toggle that stays in sync however gamma is driven.
 
-## Three pieces
+## The pieces
 
-| Build | Kind | Provides |
-|---|---|---|
-| `w3ld-workspaces.so` (`make cffi`) | waybar **CFFI plugin** | one clickable, individually-styled button per workspace (active/occupied/empty) |
-| `w3ld-gamma.so` (`make cffi`) | waybar **CFFI plugin** | day/night night-light toggle over `w3ldctl gamma`, live-synced to w3ld |
-| `w3ld-waybar` (`make`) | **CLI adapter** for `custom/` modules | `window` (focused title), plus text `workspaces` / per-number `workspace N` |
+Three CFFI plugins — the primary modules, each a native GTK widget connecting to
+the status socket directly:
 
-All three read `$XDG_RUNTIME_DIR/w3ld-$WAYLAND_DISPLAY.sock`: the CFFI plugins
-connect directly and auto-reconnect if w3ld restarts; the CLI adapter reads
+| Build (`make cffi`) | Provides |
+|---|---|
+| `w3ld-workspaces.so` | one clickable, individually-styled button per workspace (active/occupied/empty) |
+| `w3ld-window.so` | the focused window's title (app-id fallback + tooltip), `active`/`empty` class |
+| `w3ld-gamma.so` | day/night night-light toggle over `w3ldctl gamma`, live-synced to w3ld |
+
+Plus a CLI adapter (`make`) — `w3ld-waybar`, for `custom/` modules — offering
+text alternatives the plugins don't: a single-label `workspaces` and a
+per-number `workspace N` (and a `window` mode, superseded by the plugin).
+
+All read `$XDG_RUNTIME_DIR/w3ld-$WAYLAND_DISPLAY.sock`: the CFFI plugins connect
+directly and auto-reconnect if w3ld restarts; the CLI adapter reads
 `w3ldctl subscribe` on stdin.
 
 The gamma plugin is a **live reflector**. w3ld owns the current gamma and
@@ -38,7 +45,7 @@ hotkeys.
 ## Build & install
 
     make                 # w3ld-waybar (CLI adapter)
-    make cffi            # w3ld-workspaces.so + w3ld-gamma.so (needs gtk+-3.0)
+    make cffi            # w3ld-workspaces.so + w3ld-window.so + w3ld-gamma.so
     sudo make install    # CLI adapter + example config/style
     sudo make install-cffi
 
@@ -53,9 +60,9 @@ See [`examples/waybar/config_w3ld.jsonc`](examples/waybar/config_w3ld.jsonc) and
     "output": "DP-1",   // omit to follow the focused output
     "count": 9
 },
-"custom/w3ld-window": {
-    "exec": "w3ldctl subscribe | w3ld-waybar window",
-    "return-type": "json", "escape": false
+"cffi/w3ld-window": {
+    "module_path": "/usr/local/lib/w3ld-waybar/w3ld-window.so",
+    "max-length": 80   // omit "output" to follow the focused window
 },
 "cffi/w3ld-gamma": {
     "module_path": "/usr/local/lib/w3ld-waybar/w3ld-gamma.so",
@@ -69,7 +76,7 @@ See [`examples/waybar/config_w3ld.jsonc`](examples/waybar/config_w3ld.jsonc) and
 Workspace buttons are plain `button` children of `#w3ld-workspaces`, each
 carrying an `active` / `occupied` / `empty` class — style them all at once with
 `#w3ld-workspaces button.active` (etc.), no per-workspace selectors. The window
-module is `#custom-w3ld-window`; gamma is `#w3ld-gamma` with class `day`/`night`
+module is `#w3ld-window` (class `active`/`empty`); gamma is `#w3ld-gamma` with class `day`/`night`
 (and `override` when a manual temperature is in effect). `format` tokens
 `{icon} {temperature} {brightness}` — omit any to hide it. Run `w3ldctl outputs`
 for connector names.

@@ -35,12 +35,12 @@
     color: #6272a4;
 }
 
-/* ---- Focused window title (custom/w3ld-window) ---- */
-#custom-w3ld-window {
+/* ---- Focused window title (cffi/w3ld-window) ---- */
+#w3ld-window {
     padding: 0 8px;
     color: #f8f8f2;
 }
-#custom-w3ld-window.empty {
+#w3ld-window.empty {
     color: #6272a4;
 }
 
