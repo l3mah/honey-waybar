@@ -1,3 +1,5 @@
 /w3ld-waybar
 *.so
 *.o
+core
+core.*
