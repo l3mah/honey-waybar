@@ -1,11 +1,11 @@
-// honey-waybar — example waybar modules.
+// honey-waybar; example waybar modules.
 //
 // Merge these into ~/.config/waybar/config(.jsonc) and add the module names to a
 // "modules-left"/"modules-center"/"modules-right" array. Run `honeyctl outputs`
 // to see monitor connector names.
 {
     // ---- Workspaces (recommended): the CFFI plugin. One native module drawing
-    //      a clickable button per workspace, styled active / occupied / empty —
+    //      a clickable button per workspace, styled active / occupied / empty,
     //      the distinction ext/workspaces can't express. Set module_path to the
     //      installed plugin; "output" pins it to a monitor (omit to follow the
     //      focused output); "count" is how many buttons to always show.
@@ -33,7 +33,7 @@
     //      the live state however it was driven (this module, a hotkey, or a
     //      direct command). Temperature is the mode's identity (config only);
     //      brightness is the retained per-mode trim. format tokens: {icon}
-    //      {temperature} {brightness} — omit any to hide it. Styling classes:
+    //      {temperature} {brightness}; omit any to hide it. Styling classes:
     //      day / night, plus override when a manual temperature is in effect.
     //      The brightness clamp is server-side: `honeyctl gamma min|max <pct>`.
     "cffi/honey-gamma": {

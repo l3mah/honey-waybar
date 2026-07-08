@@ -2,7 +2,7 @@
  *
  * Each config value arrives as the JSON *representation* of the value: a string
  * comes quoted and JSON-escaped, and waybar's serializer escapes non-ASCII, so a
- * Font Awesome glyph in the config reaches the plugin as "" — NOT the
+ * Font Awesome glyph in the config reaches the plugin as ""; NOT the
  * literal glyph. config_string strips the quotes and un-escapes the interior
  * (standard escapes plus \uXXXX → UTF-8, with surrogate pairs); a non-string
  * value (number, bool) is returned verbatim. Returns a newly g_malloc'd string.

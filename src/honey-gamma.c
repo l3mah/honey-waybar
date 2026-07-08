@@ -3,13 +3,13 @@
  * A day/night toggle over two presets. honey owns the current applied gamma and
  * broadcasts every change on its status stream, so this module is a live
  * reflector: click toggles between day and night, scroll adjusts brightness,
- * and the display always mirrors honey's real state — however it was driven
+ * and the display always mirrors honey's real state; however it was driven
  * (this module, a hotkey, or a direct `honeyctl gamma`).
  *
  * Asymmetric by design. Temperature is the mode's identity (day = neutral,
  * night = warm) and comes only from config, restored on every toggle.
  * Brightness is the ridable trim: scroll changes it, and any live change is
- * adopted into the active mode so it survives toggles — until the bar restarts,
+ * adopted into the active mode so it survives toggles; until the bar restarts,
  * when in-memory state resets to the configured defaults.
  *
  * The widget is an event box (no button hover chrome) holding two labels so the

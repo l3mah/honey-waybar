@@ -1,82 +1,159 @@
 # honey-waybar
 
-Waybar modules for [honey](../honey-wm), fed by its `subscribe` status stream.
+Native [waybar](https://github.com/Alexays/Waybar) modules for
+[honey](https://github.com/l3mah/honey-wm), fed by the compositor's live
+status stream.
 
-honey already speaks the standard bar protocols — **`ext/workspaces`** (clickable
-workspaces) and **`wlr/taskbar`** (windows) work in stock waybar with no extra
-code. Use those if they're enough. honey-waybar exists for what the standard
-modules *can't* express:
+honey already speaks the standard bar protocols, so stock waybar's
+`ext/workspaces` and `wlr/taskbar` modules work with no extra software.
+honey-waybar exists for the state the standard modules cannot express:
 
-- **active / occupied / empty** per-workspace styling — `ext-workspace-v1` only
-  has an `active` state, no "has-windows" signal. honey's stream carries
-  `occupied[]`, so this plugin styles each workspace by all three states.
-- a **focused-window-title** label — there's no generic `wlr/window` module.
-- a **night-light control** for honey's integrated gamma (`honeyctl gamma`) — a
-  day/night toggle that stays in sync however gamma is driven.
+- per-workspace **active / occupied / empty** styling (`ext-workspace` has no
+  "has windows" signal)
+- a **focused window title** label
+- a **night light control** for honey's built-in gamma
 
-## The pieces
+It ships three CFFI plugins (real GTK widgets loaded into waybar, not scripts
+polling text) plus a small CLI adapter for setups without CFFI. All of them
+talk to honey's control socket directly and reconnect automatically if the
+compositor restarts.
 
-Three CFFI plugins — the primary modules, each a native GTK widget connecting to
-the status socket directly:
+## Installation
 
-| Build (`make cffi`) | Provides |
-|---|---|
-| `honey-workspaces.so` | one clickable, individually-styled button per workspace (active/occupied/empty) |
-| `honey-window.so` | the focused window's title (app-id fallback + tooltip), `active`/`empty` class |
-| `honey-gamma.so` | day/night night-light toggle over `honeyctl gamma`, live-synced to honey |
+On Void Linux (x86_64 glibc), signed packages:
 
-Plus a CLI adapter (`make`) — `honey-waybar`, for `custom/` modules — offering
-text alternatives the plugins don't: a single-label `workspaces` and a
-per-number `workspace N` (and a `window` mode, superseded by the plugin).
+```sh
+echo 'repository=https://l3mah.github.io/void-repo/x86_64' | sudo tee /etc/xbps.d/20-l3mah.conf
+sudo xbps-install -S honey-waybar
+```
 
-All read `$XDG_RUNTIME_DIR/honey-$WAYLAND_DISPLAY.sock`: the CFFI plugins connect
-directly and auto-reconnect if honey restarts; the CLI adapter reads
-`honeyctl subscribe` on stdin.
+From source (needs a C compiler, pkg-config, and gtk+3 headers):
 
-The gamma plugin is a **live reflector**. honey owns the current gamma and
-broadcasts every change, so the module mirrors the real state whether it was
-changed here, by a hotkey, or by a direct `honeyctl gamma`. It's asymmetric by
-design: temperature is the mode's identity (day = neutral, night = warm, from
-config, restored on every toggle); brightness is the ridable trim that scroll
-adjusts and that's retained per mode until the bar restarts. The brightness
-clamp lives in honey (`honeyctl gamma min|max <pct>`), universal to scroll and
-hotkeys.
+```sh
+make            # the CLI adapter
+make cffi       # the three plugins
+make install install-cffi    # PREFIX defaults to /usr/local
+```
 
-## Build & install
+Plugins install to `$PREFIX/lib/honey-waybar/*.so`; that is the path waybar's
+`module_path` option must point at. The Void package puts them in
+`/usr/lib/honey-waybar/`. Waybar must be built with the CFFI feature (distro
+builds normally are).
 
-    make                 # honey-waybar (CLI adapter)
-    make cffi            # honey-workspaces.so + honey-window.so + honey-gamma.so
-    sudo make install    # CLI adapter + example config/style
-    sudo make install-cffi
+A ready-made module block and stylesheet live in
+[examples/waybar/](examples/waybar/).
 
-## Configure
+## cffi/honey-workspaces
 
-See [`examples/waybar/config_honey.jsonc`](examples/waybar/config_honey.jsonc) and
-[`examples/waybar/style.css`](examples/waybar/style.css). Minimal:
+One clickable button per workspace, styled by state. Clicking a button runs
+`honeyctl workspace N`. Labels show the workspace number, or its name when one
+is set (`honeyctl workspace-name`).
+
+| Option | Default | Meaning |
+|---|---|---|
+| `module_path` | | path to `honey-workspaces.so` |
+| `output` | *(follow focus)* | pin to one monitor by connector name (`DP-1`); omit to follow the focused output |
+| `count` | `10` | number of buttons to show (1 to 32) |
+
+Styling: the module is the `#honey-workspaces` box; every button is a plain
+`button` child carrying one of the classes `active`, `occupied`, or `empty`,
+so one generic rule set covers all workspaces:
+
+```css
+#honey-workspaces button          { color: #6272a4; }
+#honey-workspaces button.occupied { color: #f8f8f2; }
+#honey-workspaces button.active   { color: #bd93f9; }
+```
+
+## cffi/honey-window
+
+The focused window's title, falling back to its app-id when the title is
+empty, with the app-id as tooltip. Follows focus across all outputs unless
+pinned.
+
+| Option | Default | Meaning |
+|---|---|---|
+| `module_path` | | path to `honey-window.so` |
+| `output` | *(follow focus)* | pin to one monitor; omit to follow the focused window |
+| `max-length` | `0` | ellipsize the title past this many characters (`0` = no limit) |
+
+Styling: the label is `#honey-window`, with class `active` while a window is
+focused and `empty` otherwise.
+
+## cffi/honey-gamma
+
+A day/night toggle for honey's integrated night light. Left click flips
+between the day and night presets; scrolling adjusts brightness through
+honey's relative op, so the server-side clamp (`honeyctl gamma min|max`)
+always applies. honey broadcasts every gamma change, so the module mirrors the
+real state no matter what changed it: this module, a hotkey, or a direct
+`honeyctl gamma`.
+
+| Option | Default | Meaning |
+|---|---|---|
+| `module_path` | | path to `honey-gamma.so` |
+| `temperature-day` | `6500` | day temperature (Kelvin) |
+| `temperature-night` | `4000` | night temperature (Kelvin) |
+| `brightness-day` | `100` | starting day brightness (percent) |
+| `brightness-night` | `60` | starting night brightness (percent) |
+| `step` | `5` | scroll step (percent) |
+| `icon-day` | `☀` | glyph substituted for `{icon}` in day mode |
+| `icon-night` | `☾` | glyph substituted for `{icon}` in night mode |
+| `format` | `{icon} {temperature}K {brightness}%` | display template; tokens `{icon}`, `{temperature}`, `{brightness}`; omit a token to hide it |
+
+Two design points worth knowing:
+
+- **Temperature is the mode's identity, brightness is a trim.** Each toggle
+  restores the mode's configured temperature, while brightness changes from
+  any source are adopted into the active mode and survive toggles (until the
+  bar restarts, which resets to the configured values).
+- If the live temperature differs from the active mode's preset (someone ran
+  `honeyctl gamma temperature ...`), the module gains an `override` class.
+
+Styling: the module is `#honey-gamma` (classes `day`, `night`, `override`)
+holding two independently styleable labels, `#honey-gamma-icon` and
+`#honey-gamma-value`:
+
+```css
+#honey-gamma-icon                  { color: #bd93f9; }
+#honey-gamma.night #honey-gamma-icon { color: #ffb86c; }
+```
+
+Example module:
 
 ```jsonc
-"cffi/honey-workspaces": {
-    "module_path": "/usr/local/lib/honey-waybar/honey-workspaces.so",
-    "output": "DP-1",   // omit to follow the focused output
-    "count": 9
-},
-"cffi/honey-window": {
-    "module_path": "/usr/local/lib/honey-waybar/honey-window.so",
-    "max-length": 80   // omit "output" to follow the focused window
-},
 "cffi/honey-gamma": {
-    "module_path": "/usr/local/lib/honey-waybar/honey-gamma.so",
-    "temperature-day": 6500, "temperature-night": 4000,
-    "brightness-day": 100, "brightness-night": 60, "step": 5,
-    "icon-day": "☀", "icon-night": "☾",
-    "format": "{icon} {temperature}K {brightness}%"
+    "module_path": "/usr/lib/honey-waybar/honey-gamma.so",
+    "temperature-night": 4000,
+    "brightness-night": 60,
+    "format": "{icon} {brightness}%"
 }
 ```
 
-Workspace buttons are plain `button` children of `#honey-workspaces`, each
-carrying an `active` / `occupied` / `empty` class — style them all at once with
-`#honey-workspaces button.active` (etc.), no per-workspace selectors. The window
-module is `#honey-window` (class `active`/`empty`); gamma is `#honey-gamma` with class `day`/`night`
-(and `override` when a manual temperature is in effect). `format` tokens
-`{icon} {temperature} {brightness}` — omit any to hide it. Run `honeyctl outputs`
-for connector names.
+## The CLI adapter (no CFFI needed)
+
+`honey-waybar` reads `honeyctl subscribe` on stdin and prints waybar
+custom-module JSON. Three modes, each optionally pinned to an output:
+
+| Mode | What it renders |
+|---|---|
+| `workspaces [output]` | one text module listing occupied workspaces, the active one bold |
+| `workspace N [output]` | one module for workspace N with class `active`/`occupied`/`empty`; use several for separate buttons |
+| `window [output]` | the focused window's title (app-id fallback) |
+
+```jsonc
+"custom/honey-workspaces": {
+    "exec": "honeyctl subscribe | honey-waybar workspaces DP-1",
+    "return-type": "json",
+    "escape": false,
+    "on-scroll-up": "honeyctl workspace-next",
+    "on-scroll-down": "honeyctl workspace-prev"
+}
+```
+
+The CFFI plugins are the better experience where available; the adapter covers
+text-only setups.
+
+## License
+
+[GPL-3.0-or-later](LICENSE).

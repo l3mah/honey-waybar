@@ -1,8 +1,8 @@
-/* honey-waybar — example styles (Dracula). Merge into ~/.config/waybar/style.css. */
+/* honey-waybar; example styles (Dracula). Merge into ~/.config/waybar/style.css. */
 
 /* ---- CFFI plugin workspaces (cffi/honey-workspaces) ----
  * Buttons are plain `button` children of #honey-workspaces, each carrying an
- * active / occupied / empty class, so one rule set styles them all by state —
+ * active / occupied / empty class, so one rule set styles them all by state;
  * no per-workspace selectors, independent of "count". */
 #honey-workspaces button {
     padding: 0 8px;

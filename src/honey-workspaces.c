@@ -3,11 +3,11 @@
  *
  * Unlike a waybar "custom/..." module (a single label with one click handler), a
  * CFFI plugin builds real GTK widgets, so each workspace is an individually
- * clickable, individually styleable button inside one module — with the
+ * clickable, individually styleable button inside one module; with the
  * active / occupied / empty distinction the ext-workspace protocol can't express.
  *
  * Buttons are plain `button` children of the #honey-workspaces box, each carrying
- * the style class active, occupied, or empty — so one generic rule set
+ * the style class active, occupied, or empty; so one generic rule set
  * (#honey-workspaces button.active, ...) styles them all by state, no
  * per-workspace selectors. Clicking a button runs `honeyctl workspace N`.
  *
@@ -134,7 +134,7 @@ void *wbcffi_init (
 
 		/* Buttons are plain `button` children of #honey-workspaces carrying an
 		 * active / occupied / empty class, so one generic rule set styles all
-		 * of them by state (like a native #workspaces button.active) — no
+		 * of them by state (like a native #workspaces button.active); no
 		 * per-workspace selectors needed. */
 		GtkWidget *button = gtk_button_new_with_label(label);
 		gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
