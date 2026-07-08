@@ -1,7 +1,7 @@
-// w3ld-waybar — example waybar modules.
+// honey-waybar — example waybar modules.
 //
 // Merge these into ~/.config/waybar/config(.jsonc) and add the module names to a
-// "modules-left"/"modules-center"/"modules-right" array. Run `w3ldctl outputs`
+// "modules-left"/"modules-center"/"modules-right" array. Run `honeyctl outputs`
 // to see monitor connector names.
 {
     // ---- Workspaces (recommended): the CFFI plugin. One native module drawing
@@ -9,8 +9,8 @@
     //      the distinction ext/workspaces can't express. Set module_path to the
     //      installed plugin; "output" pins it to a monitor (omit to follow the
     //      focused output); "count" is how many buttons to always show.
-    "cffi/w3ld-workspaces": {
-        "module_path": "/usr/local/lib/w3ld-waybar/w3ld-workspaces.so",
+    "cffi/honey-workspaces": {
+        "module_path": "/usr/local/lib/honey-waybar/honey-workspaces.so",
         "output": "DP-1",
         "count": 9
     },
@@ -20,24 +20,24 @@
     //      falling back to its app-id, with the app-id in the tooltip. "output"
     //      pins it to a monitor (omit to follow the focused window);
     //      "max-length" ellipsizes long titles. (A no-CFFI alternative is the
-    //      CLI adapter as a custom module: "exec": "w3ldctl subscribe |
-    //      w3ld-waybar window".)
-    "cffi/w3ld-window": {
-        "module_path": "/usr/local/lib/w3ld-waybar/w3ld-window.so",
+    //      CLI adapter as a custom module: "exec": "honeyctl subscribe |
+    //      honey-waybar window".)
+    "cffi/honey-window": {
+        "module_path": "/usr/local/lib/honey-waybar/honey-window.so",
         "max-length": 80
     },
 
-    // ---- Gamma / night light (CFFI plugin): a day/night toggle over w3ld's
-    //      integrated `w3ldctl gamma`. Click toggles day<->night; scroll adjusts
-    //      brightness. w3ld broadcasts every gamma change, so the module reflects
+    // ---- Gamma / night light (CFFI plugin): a day/night toggle over honey's
+    //      integrated `honeyctl gamma`. Click toggles day<->night; scroll adjusts
+    //      brightness. honey broadcasts every gamma change, so the module reflects
     //      the live state however it was driven (this module, a hotkey, or a
     //      direct command). Temperature is the mode's identity (config only);
     //      brightness is the retained per-mode trim. format tokens: {icon}
     //      {temperature} {brightness} — omit any to hide it. Styling classes:
     //      day / night, plus override when a manual temperature is in effect.
-    //      The brightness clamp is server-side: `w3ldctl gamma min|max <pct>`.
-    "cffi/w3ld-gamma": {
-        "module_path": "/usr/local/lib/w3ld-waybar/w3ld-gamma.so",
+    //      The brightness clamp is server-side: `honeyctl gamma min|max <pct>`.
+    "cffi/honey-gamma": {
+        "module_path": "/usr/local/lib/honey-waybar/honey-gamma.so",
         "temperature-day": 6500,
         "temperature-night": 4000,
         "brightness-day": 100,
@@ -51,11 +51,11 @@
     // ---- Workspaces alternative: the CLI adapter as one text module. Not
     //      individually clickable; the active workspace is bold and scrolling
     //      switches workspaces. escape:false keeps the bold markup.
-    "custom/w3ld-workspaces": {
-        "exec": "w3ldctl subscribe | w3ld-waybar workspaces DP-1",
+    "custom/honey-workspaces": {
+        "exec": "honeyctl subscribe | honey-waybar workspaces DP-1",
         "return-type": "json",
         "escape": false,
-        "on-scroll-up": "w3ldctl workspace-next",
-        "on-scroll-down": "w3ldctl workspace-prev"
+        "on-scroll-up": "honeyctl workspace-next",
+        "on-scroll-down": "honeyctl workspace-prev"
     }
 }

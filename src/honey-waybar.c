@@ -1,12 +1,12 @@
-/* w3ld-waybar: a waybar custom-module adapter for w3ld's status stream.
+/* honey-waybar: a waybar custom-module adapter for honey's status stream.
  *
- * Reads w3ld's `w3ldctl subscribe` JSON Lines on stdin and prints waybar
+ * Reads honey's `honeyctl subscribe` JSON Lines on stdin and prints waybar
  * custom-module JSON (one object per line) for a single module. Usage in a
  * waybar "custom/..." module:
  *
- *   "exec": "w3ldctl subscribe | w3ld-waybar workspaces DP-1"
- *   "exec": "w3ldctl subscribe | w3ld-waybar workspace 3 DP-1"
- *   "exec": "w3ldctl subscribe | w3ld-waybar window"
+ *   "exec": "honeyctl subscribe | honey-waybar workspaces DP-1"
+ *   "exec": "honeyctl subscribe | honey-waybar workspace 3 DP-1"
+ *   "exec": "honeyctl subscribe | honey-waybar window"
  *
  * Modules:
  *   workspaces   one module for all workspaces: the occupied numbers with the
@@ -165,7 +165,7 @@ int main (
 	char **argv
 ) {
 	if (argc < 2) {
-		fprintf(stderr, "usage: w3ld-waybar "
+		fprintf(stderr, "usage: honey-waybar "
 				"<workspaces|workspace <n>|window> [output]\n");
 		return 2;
 	}
@@ -179,7 +179,7 @@ int main (
 		output_filter = argc > 2 ? argv[2] : NULL;
 	} else if (!strcmp(argv[1], "workspace")) {
 		if (argc < 3) {
-			fprintf(stderr, "usage: w3ld-waybar workspace <number> [output]\n");
+			fprintf(stderr, "usage: honey-waybar workspace <number> [output]\n");
 			return 2;
 		}
 		module = MODULE_WORKSPACE;
@@ -191,7 +191,7 @@ int main (
 		event = "\"ev\":\"window\"";
 		output_filter = argc > 2 ? argv[2] : NULL;
 	} else {
-		fprintf(stderr, "w3ld-waybar: unknown module '%s' "
+		fprintf(stderr, "honey-waybar: unknown module '%s' "
 				"(workspaces|workspace|window)\n", argv[1]);
 		return 2;
 	}

@@ -1,8 +1,8 @@
-/* status_feed.h: shared status-stream plumbing for the w3ld waybar plugins.
+/* status_feed.h: shared status-stream plumbing for the honey waybar plugins.
  *
- * Connects to w3ld's control socket ($XDG_RUNTIME_DIR/w3ld-$WAYLAND_DISPLAY.sock),
+ * Connects to honey's control socket ($XDG_RUNTIME_DIR/honey-$WAYLAND_DISPLAY.sock),
  * sends `subscribe`, and delivers each newline-delimited JSON line to a callback
- * on the GTK main loop. If w3ld is not up yet, or later restarts, the feed keeps
+ * on the GTK main loop. If honey is not up yet, or later restarts, the feed keeps
  * retrying until it reconnects. Both the workspaces and window plugins embed one.
  */
 #pragma once
@@ -25,7 +25,7 @@ typedef struct {
 	void *user;
 } status_feed;
 
-/* Connect to w3ld's control socket and subscribe. Returns the fd, or -1. */
+/* Connect to honey's control socket and subscribe. Returns the fd, or -1. */
 static inline int status_feed_connect (void) {
 	const char *runtime_dir = getenv("XDG_RUNTIME_DIR");
 	const char *wayland_display = getenv("WAYLAND_DISPLAY");
@@ -34,7 +34,7 @@ static inline int status_feed_connect (void) {
 
 	struct sockaddr_un address = { .sun_family = AF_UNIX };
 	int written = snprintf(address.sun_path, sizeof address.sun_path,
-			"%s/w3ld-%s.sock", runtime_dir, wayland_display);
+			"%s/honey-%s.sock", runtime_dir, wayland_display);
 	if (written < 0 || (size_t)written >= sizeof address.sun_path)
 		return -1;
 
@@ -112,7 +112,7 @@ static inline gboolean status_feed_readable (
 	return G_SOURCE_CONTINUE;
 }
 
-/* Begin feeding lines to on_line(.., user); retries until w3ld is reachable. */
+/* Begin feeding lines to on_line(.., user); retries until honey is reachable. */
 static inline void status_feed_start (
 	status_feed *feed,
 	void (*on_line)(const char *line, void *user),

@@ -1,10 +1,10 @@
-/* w3ld-gamma: a waybar CFFI plugin controlling w3ld's integrated night light.
+/* honey-gamma: a waybar CFFI plugin controlling honey's integrated night light.
  *
- * A day/night toggle over two presets. w3ld owns the current applied gamma and
+ * A day/night toggle over two presets. honey owns the current applied gamma and
  * broadcasts every change on its status stream, so this module is a live
  * reflector: click toggles between day and night, scroll adjusts brightness,
- * and the display always mirrors w3ld's real state — however it was driven
- * (this module, a hotkey, or a direct `w3ldctl gamma`).
+ * and the display always mirrors honey's real state — however it was driven
+ * (this module, a hotkey, or a direct `honeyctl gamma`).
  *
  * Asymmetric by design. Temperature is the mode's identity (day = neutral,
  * night = warm) and comes only from config, restored on every toggle.
@@ -14,9 +14,9 @@
  *
  * The widget is an event box (no button hover chrome) holding two labels so the
  * icon and the value can be styled independently:
- *   #w3ld-gamma            the module (carries the day / night / override class)
- *   #w3ld-gamma-icon       the {icon} glyph  (e.g. colour it purple)
- *   #w3ld-gamma-value      the temperature / brightness text (default colour)
+ *   #honey-gamma            the module (carries the day / night / override class)
+ *   #honey-gamma-icon       the {icon} glyph  (e.g. colour it purple)
+ *   #honey-gamma-value      the temperature / brightness text (default colour)
  *
  * Config keys (waybar module JSON):
  *   temperature-day / temperature-night   mode temperatures in Kelvin
@@ -25,7 +25,7 @@
  *   icon-day        / icon-night          per-mode glyph for {icon}
  *   format          tokens {icon} {temperature} {brightness}; omit any to hide
  *
- * The brightness clamp (min/max) lives in w3ld (`w3ldctl gamma min|max <pct>`),
+ * The brightness clamp (min/max) lives in honey (`honeyctl gamma min|max <pct>`),
  * so it is universal to scroll and hotkeys alike.
  */
 #include "waybar_cffi_module.h"
@@ -49,19 +49,19 @@ typedef struct {
 	char *format;
 
 	gamma_mode mode;
-	int live_temp, live_bright;     /* last values reported by w3ld (display) */
+	int live_temp, live_bright;     /* last values reported by honey (display) */
 	double scroll_accum;            /* smooth-scroll accumulator */
 
-	GtkWidget *root;                /* event box (#w3ld-gamma) */
-	GtkWidget *icon;                /* #w3ld-gamma-icon */
-	GtkWidget *value;               /* #w3ld-gamma-value */
+	GtkWidget *root;                /* event box (#honey-gamma) */
+	GtkWidget *icon;                /* #honey-gamma-icon */
+	GtkWidget *value;               /* #honey-gamma-value */
 	status_feed feed;
-} w3ld_gamma;
+} honey_gamma;
 
 /* Redraw the labels from the format template and set the day/night (+ override)
  * class. {icon} goes to the icon label; {temperature}/{brightness} and any
  * literals go to the value label, so the two can be coloured separately. */
-static void render (w3ld_gamma *self) {
+static void render (honey_gamma *self) {
 	const char *glyph = self->mode == MODE_DAY ? self->icon_day : self->icon_night;
 	GString *icon = g_string_new(NULL);
 	GString *value = g_string_new(NULL);
@@ -101,23 +101,23 @@ static void render (w3ld_gamma *self) {
 
 /* Apply the active mode's preset (its temperature + retained brightness). The
  * resulting broadcast confirms it; render provisionally for a snappy toggle. */
-static void apply_mode (w3ld_gamma *self) {
+static void apply_mode (honey_gamma *self) {
 	int temp = self->mode == MODE_DAY ? self->temp_day : self->temp_night;
 	int bright = self->mode == MODE_DAY ? self->bright_day : self->bright_night;
 	self->live_temp = temp;
 	self->live_bright = bright;
 	render(self);
 
-	char *command = g_strdup_printf("w3ldctl gamma %d %d", temp, bright);
+	char *command = g_strdup_printf("honeyctl gamma %d %d", temp, bright);
 	g_spawn_command_line_async(command, NULL);
 	g_free(command);
 }
 
-/* A gamma event from w3ld (any source): reflect it, and adopt the brightness
+/* A gamma event from honey (any source): reflect it, and adopt the brightness
  * into the active mode so a live edit sticks across toggles. Temperature is the
  * mode's identity and is left untouched. */
 static void on_line (const char *line, void *user) {
-	w3ld_gamma *self = user;
+	honey_gamma *self = user;
 	if (!strstr(line, "\"ev\":\"gamma\""))
 		return;
 
@@ -139,13 +139,13 @@ static gboolean on_button_press (
 	(void)widget;
 	if (event->button != 1)
 		return FALSE;
-	w3ld_gamma *self = data;
+	honey_gamma *self = data;
 	self->mode = self->mode == MODE_DAY ? MODE_NIGHT : MODE_DAY;
 	apply_mode(self);
 	return TRUE;
 }
 
-/* Scroll: nudge brightness via w3ld's relative op, so its clamp and the adopt
+/* Scroll: nudge brightness via honey's relative op, so its clamp and the adopt
  * path apply uniformly; the broadcast updates the display. */
 static gboolean on_scroll (
 	GtkWidget *widget,
@@ -153,7 +153,7 @@ static gboolean on_scroll (
 	gpointer data
 ) {
 	(void)widget;
-	w3ld_gamma *self = data;
+	honey_gamma *self = data;
 	const char *sign = NULL;
 
 	if (event->direction == GDK_SCROLL_UP)
@@ -175,7 +175,7 @@ static gboolean on_scroll (
 	if (!sign)
 		return TRUE;
 
-	char *command = g_strdup_printf("w3ldctl gamma brightness %s%d",
+	char *command = g_strdup_printf("honeyctl gamma brightness %s%d",
 			sign, self->step);
 	g_spawn_command_line_async(command, NULL);
 	g_free(command);
@@ -187,7 +187,7 @@ void *wbcffi_init (
 	const wbcffi_config_entry *config_entries,
 	size_t config_entries_len
 ) {
-	w3ld_gamma *self = g_malloc0(sizeof *self);
+	honey_gamma *self = g_malloc0(sizeof *self);
 	self->temp_day = 6500;
 	self->temp_night = 4000;
 	self->bright_day = 100;
@@ -227,7 +227,7 @@ void *wbcffi_init (
 
 	GtkContainer *root = init_info->get_root_widget(init_info->obj);
 	self->root = gtk_event_box_new();
-	gtk_widget_set_name(self->root, "w3ld-gamma");
+	gtk_widget_set_name(self->root, "honey-gamma");
 	gtk_event_box_set_visible_window(GTK_EVENT_BOX(self->root), TRUE);
 	gtk_widget_add_events(self->root,
 			GDK_BUTTON_PRESS_MASK | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
@@ -237,9 +237,9 @@ void *wbcffi_init (
 
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	self->icon = gtk_label_new("");
-	gtk_widget_set_name(self->icon, "w3ld-gamma-icon");
+	gtk_widget_set_name(self->icon, "honey-gamma-icon");
 	self->value = gtk_label_new("");
-	gtk_widget_set_name(self->value, "w3ld-gamma-value");
+	gtk_widget_set_name(self->value, "honey-gamma-value");
 	gtk_box_pack_start(GTK_BOX(box), self->icon, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(box), self->value, FALSE, FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(self->root), box);
@@ -253,7 +253,7 @@ void *wbcffi_init (
 }
 
 void wbcffi_deinit (void *instance) {
-	w3ld_gamma *self = instance;
+	honey_gamma *self = instance;
 	if (!self)
 		return;
 	status_feed_stop(&self->feed);

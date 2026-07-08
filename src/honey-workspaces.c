@@ -1,15 +1,15 @@
-/* w3ld-workspaces: a waybar CFFI plugin rendering one clickable button per
- * w3ld workspace.
+/* honey-workspaces: a waybar CFFI plugin rendering one clickable button per
+ * honey workspace.
  *
  * Unlike a waybar "custom/..." module (a single label with one click handler), a
  * CFFI plugin builds real GTK widgets, so each workspace is an individually
  * clickable, individually styleable button inside one module — with the
  * active / occupied / empty distinction the ext-workspace protocol can't express.
  *
- * Buttons are plain `button` children of the #w3ld-workspaces box, each carrying
+ * Buttons are plain `button` children of the #honey-workspaces box, each carrying
  * the style class active, occupied, or empty — so one generic rule set
- * (#w3ld-workspaces button.active, ...) styles them all by state, no
- * per-workspace selectors. Clicking a button runs `w3ldctl workspace N`.
+ * (#honey-workspaces button.active, ...) styles them all by state, no
+ * per-workspace selectors. Clicking a button runs `honeyctl workspace N`.
  *
  * Config keys (waybar module JSON):
  *   output   connector to track (e.g. "DP-1"); omit to follow the focused output
@@ -30,12 +30,12 @@ typedef struct {
 	int count;                          /* number of buttons */
 	GtkWidget *buttons[MAX_WORKSPACES];
 	status_feed feed;
-} w3ld_workspaces;
+} honey_workspaces;
 
 /* Does this event describe the tracked output? With no output set, follow the
  * focused output (focused == true); otherwise match the connector name. */
 static gboolean line_for_output (
-	w3ld_workspaces *self,
+	honey_workspaces *self,
 	const char *line
 ) {
 	if (!self->output)
@@ -49,7 +49,7 @@ static gboolean line_for_output (
  * active workspace, occupied for ones with windows, empty otherwise; label is
  * the workspace name if set, else its number. */
 static void apply_states (
-	w3ld_workspaces *self,
+	honey_workspaces *self,
 	const char *line
 ) {
 	int active = json_get_int(line, "active");
@@ -84,19 +84,19 @@ static void apply_states (
 }
 
 static void on_line (const char *line, void *user) {
-	w3ld_workspaces *self = user;
+	honey_workspaces *self = user;
 	if (strstr(line, "\"ev\":\"workspaces\"") && line_for_output(self, line))
 		apply_states(self, line);
 }
 
-/* Button handler: switch w3ld to the clicked workspace. */
+/* Button handler: switch honey to the clicked workspace. */
 static void on_workspace_clicked (
 	GtkButton *button,
 	gpointer data
 ) {
 	(void)data;
-	int number = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "w3ld-ws"));
-	char *command = g_strdup_printf("w3ldctl workspace %d", number);
+	int number = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "honey-ws"));
+	char *command = g_strdup_printf("honeyctl workspace %d", number);
 	g_spawn_command_line_async(command, NULL);
 	g_free(command);
 }
@@ -106,7 +106,7 @@ void *wbcffi_init (
 	const wbcffi_config_entry *config_entries,
 	size_t config_entries_len
 ) {
-	w3ld_workspaces *self = g_malloc0(sizeof *self);
+	honey_workspaces *self = g_malloc0(sizeof *self);
 	self->count = 10;
 
 	for (size_t i = 0; i < config_entries_len; i++) {
@@ -126,20 +126,20 @@ void *wbcffi_init (
 
 	GtkContainer *root = init_info->get_root_widget(init_info->obj);
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_widget_set_name(box, "w3ld-workspaces");
+	gtk_widget_set_name(box, "honey-workspaces");
 
 	for (int index = 0; index < self->count; index++) {
 		char label[8];
 		snprintf(label, sizeof label, "%d", index + 1);
 
-		/* Buttons are plain `button` children of #w3ld-workspaces carrying an
+		/* Buttons are plain `button` children of #honey-workspaces carrying an
 		 * active / occupied / empty class, so one generic rule set styles all
 		 * of them by state (like a native #workspaces button.active) — no
 		 * per-workspace selectors needed. */
 		GtkWidget *button = gtk_button_new_with_label(label);
 		gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 		gtk_style_context_add_class(gtk_widget_get_style_context(button), "empty");
-		g_object_set_data(G_OBJECT(button), "w3ld-ws", GINT_TO_POINTER(index + 1));
+		g_object_set_data(G_OBJECT(button), "honey-ws", GINT_TO_POINTER(index + 1));
 		g_signal_connect(button, "clicked",
 				G_CALLBACK(on_workspace_clicked), NULL);
 		gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
@@ -154,7 +154,7 @@ void *wbcffi_init (
 }
 
 void wbcffi_deinit (void *instance) {
-	w3ld_workspaces *self = instance;
+	honey_workspaces *self = instance;
 	if (!self)
 		return;
 	status_feed_stop(&self->feed);

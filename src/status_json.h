@@ -1,6 +1,6 @@
-/* status_json.h: minimal readers for w3ld's status stream.
+/* status_json.h: minimal readers for honey's status stream.
  *
- * w3ld's `subscribe` schema is fixed and versioned (v:1), so values are found by
+ * honey's `subscribe` schema is fixed and versioned (v:1), so values are found by
  * locating known keys rather than with a general JSON parser. */
 #pragma once
 

@@ -1,61 +1,61 @@
-/* w3ld-waybar — example styles (Dracula). Merge into ~/.config/waybar/style.css. */
+/* honey-waybar — example styles (Dracula). Merge into ~/.config/waybar/style.css. */
 
-/* ---- CFFI plugin workspaces (cffi/w3ld-workspaces) ----
- * Buttons are plain `button` children of #w3ld-workspaces, each carrying an
+/* ---- CFFI plugin workspaces (cffi/honey-workspaces) ----
+ * Buttons are plain `button` children of #honey-workspaces, each carrying an
  * active / occupied / empty class, so one rule set styles them all by state —
  * no per-workspace selectors, independent of "count". */
-#w3ld-workspaces button {
+#honey-workspaces button {
     padding: 0 8px;
     background: transparent;
     border-bottom: 2px solid transparent;
 }
-#w3ld-workspaces button.empty {
+#honey-workspaces button.empty {
     color: #6272a4;                 /* comment: no windows, not focused */
 }
-#w3ld-workspaces button.occupied {
+#honey-workspaces button.occupied {
     color: #f8f8f2;                 /* foreground: has windows */
 }
-#w3ld-workspaces button.active {
+#honey-workspaces button.active {
     color: #bd93f9;                 /* purple: currently focused */
     border-bottom: 2px solid #bd93f9;
 }
-#w3ld-workspaces button:hover {
+#honey-workspaces button:hover {
     background-color: #44475a;
     color: #f8f8f2;
 }
 
-/* ---- CLI adapter workspaces (custom/w3ld-workspaces), the text alternative ----
+/* ---- CLI adapter workspaces (custom/honey-workspaces), the text alternative ----
  * .focused/.unfocused reflect whether this output owns the focused window; the
  * active workspace is bold via markup, not a class. */
-#custom-w3ld-workspaces {
+#custom-honey-workspaces {
     padding: 0 8px;
     color: #bd93f9;
 }
-#custom-w3ld-workspaces.unfocused {
+#custom-honey-workspaces.unfocused {
     color: #6272a4;
 }
 
-/* ---- Focused window title (cffi/w3ld-window) ---- */
-#w3ld-window {
+/* ---- Focused window title (cffi/honey-window) ---- */
+#honey-window {
     padding: 0 8px;
     color: #f8f8f2;
 }
-#w3ld-window.empty {
+#honey-window.empty {
     color: #6272a4;
 }
 
-/* ---- Gamma / night light (cffi/w3ld-gamma) ----
- * Two labels: #w3ld-gamma-icon (the glyph) and #w3ld-gamma-value (the text).
+/* ---- Gamma / night light (cffi/honey-gamma) ----
+ * Two labels: #honey-gamma-icon (the glyph) and #honey-gamma-value (the text).
  * The module carries the class day / night (and override when a manual
  * temperature is in effect), so only the icon need change colour by mode. */
-#w3ld-gamma {
+#honey-gamma {
     padding: 0 8px;
 }
-#w3ld-gamma-icon {
+#honey-gamma-icon {
     color: #bd93f9;                 /* day: purple accent */
     margin-right: 6px;
 }
-#w3ld-gamma.night #w3ld-gamma-icon {
+#honey-gamma.night #honey-gamma-icon {
     color: #ffb86c;                 /* night: warm accent */
 }
-/* #w3ld-gamma-value inherits the bar's default text colour. */
+/* #honey-gamma-value inherits the bar's default text colour. */
