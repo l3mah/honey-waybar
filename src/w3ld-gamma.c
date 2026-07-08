@@ -12,6 +12,12 @@
  * adopted into the active mode so it survives toggles — until the bar restarts,
  * when in-memory state resets to the configured defaults.
  *
+ * The widget is an event box (no button hover chrome) holding two labels so the
+ * icon and the value can be styled independently:
+ *   #w3ld-gamma            the module (carries the day / night / override class)
+ *   #w3ld-gamma-icon       the {icon} glyph  (e.g. colour it purple)
+ *   #w3ld-gamma-value      the temperature / brightness text (default colour)
+ *
  * Config keys (waybar module JSON):
  *   temperature-day / temperature-night   mode temperatures in Kelvin
  *   brightness-day  / brightness-night    starting per-mode brightness (percent)
@@ -26,6 +32,7 @@
 
 #include "status_feed.h"
 #include "status_json.h"
+#include "waybar_config.h"
 
 const size_t wbcffi_version = 2;
 
@@ -45,51 +52,42 @@ typedef struct {
 	int live_temp, live_bright;     /* last values reported by w3ld (display) */
 	double scroll_accum;            /* smooth-scroll accumulator */
 
-	GtkWidget *button;
+	GtkWidget *root;                /* event box (#w3ld-gamma) */
+	GtkWidget *icon;                /* #w3ld-gamma-icon */
+	GtkWidget *value;               /* #w3ld-gamma-value */
 	status_feed feed;
 } w3ld_gamma;
 
-/* Copy a CFFI config value into a plain string. In ABI v2 the value is the JSON
- * representation (a string arrives quoted, e.g. "☀"); trim whitespace, then
- * strip the surrounding quotes. */
-static char *config_string (const char *value) {
-	if (!value)
-		return NULL;
-	while (*value == ' ' || *value == '\t' || *value == '\n' || *value == '\r')
-		value++;
-	size_t length = strlen(value);
-	while (length > 0 && (value[length - 1] == ' ' || value[length - 1] == '\t'
-			|| value[length - 1] == '\n' || value[length - 1] == '\r'))
-		length--;
-	if (length >= 2 && value[0] == '"' && value[length - 1] == '"')
-		return g_strndup(value + 1, length - 2);
-	return g_strndup(value, length);
-}
-
-/* Redraw the label from the format template and set the day/night (+ override)
- * style classes. {temperature}/{brightness} render w3ld's live values. */
+/* Redraw the labels from the format template and set the day/night (+ override)
+ * class. {icon} goes to the icon label; {temperature}/{brightness} and any
+ * literals go to the value label, so the two can be coloured separately. */
 static void render (w3ld_gamma *self) {
-	const char *icon = self->mode == MODE_DAY ? self->icon_day : self->icon_night;
-	GString *out = g_string_new(NULL);
+	const char *glyph = self->mode == MODE_DAY ? self->icon_day : self->icon_night;
+	GString *icon = g_string_new(NULL);
+	GString *value = g_string_new(NULL);
 	for (const char *p = self->format; *p; ) {
 		if (!strncmp(p, "{icon}", 6)) {
-			g_string_append(out, icon ? icon : "");
+			g_string_append(icon, glyph ? glyph : "");
 			p += 6;
 		} else if (!strncmp(p, "{temperature}", 13)) {
-			g_string_append_printf(out, "%d", self->live_temp);
+			g_string_append_printf(value, "%d", self->live_temp);
 			p += 13;
 		} else if (!strncmp(p, "{brightness}", 12)) {
-			g_string_append_printf(out, "%d", self->live_bright);
+			g_string_append_printf(value, "%d", self->live_bright);
 			p += 12;
 		} else {
-			g_string_append_c(out, *p);
+			g_string_append_c(value, *p);
 			p++;
 		}
 	}
-	gtk_button_set_label(GTK_BUTTON(self->button), out->str);
-	g_string_free(out, TRUE);
+	gtk_label_set_text(GTK_LABEL(self->icon), icon->str);
+	gtk_label_set_text(GTK_LABEL(self->value), value->str);
+	gtk_widget_set_visible(self->icon, icon->len > 0);
+	gtk_widget_set_visible(self->value, value->len > 0);
+	g_string_free(icon, TRUE);
+	g_string_free(value, TRUE);
 
-	GtkStyleContext *style = gtk_widget_get_style_context(self->button);
+	GtkStyleContext *style = gtk_widget_get_style_context(self->root);
 	gtk_style_context_remove_class(style, "day");
 	gtk_style_context_remove_class(style, "night");
 	gtk_style_context_remove_class(style, "override");
@@ -132,15 +130,19 @@ static void on_line (const char *line, void *user) {
 	render(self);
 }
 
-/* Click: flip day <-> night and apply that mode's preset. */
-static void on_clicked (
-	GtkButton *button,
+/* Left click: flip day <-> night and apply that mode's preset. */
+static gboolean on_button_press (
+	GtkWidget *widget,
+	GdkEventButton *event,
 	gpointer data
 ) {
-	(void)button;
+	(void)widget;
+	if (event->button != 1)
+		return FALSE;
 	w3ld_gamma *self = data;
 	self->mode = self->mode == MODE_DAY ? MODE_NIGHT : MODE_DAY;
 	apply_mode(self);
+	return TRUE;
 }
 
 /* Scroll: nudge brightness via w3ld's relative op, so its clamp and the adopt
@@ -224,14 +226,25 @@ void *wbcffi_init (
 		self->step = 1;
 
 	GtkContainer *root = init_info->get_root_widget(init_info->obj);
-	self->button = gtk_button_new_with_label("");
-	gtk_button_set_relief(GTK_BUTTON(self->button), GTK_RELIEF_NONE);
-	gtk_widget_set_name(self->button, "w3ld-gamma");
-	gtk_widget_add_events(self->button, GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
-	g_signal_connect(self->button, "clicked", G_CALLBACK(on_clicked), self);
-	g_signal_connect(self->button, "scroll-event", G_CALLBACK(on_scroll), self);
-	gtk_container_add(root, self->button);
-	gtk_widget_show_all(self->button);
+	self->root = gtk_event_box_new();
+	gtk_widget_set_name(self->root, "w3ld-gamma");
+	gtk_event_box_set_visible_window(GTK_EVENT_BOX(self->root), TRUE);
+	gtk_widget_add_events(self->root,
+			GDK_BUTTON_PRESS_MASK | GDK_SCROLL_MASK | GDK_SMOOTH_SCROLL_MASK);
+	g_signal_connect(self->root, "button-press-event",
+			G_CALLBACK(on_button_press), self);
+	g_signal_connect(self->root, "scroll-event", G_CALLBACK(on_scroll), self);
+
+	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	self->icon = gtk_label_new("");
+	gtk_widget_set_name(self->icon, "w3ld-gamma-icon");
+	self->value = gtk_label_new("");
+	gtk_widget_set_name(self->value, "w3ld-gamma-value");
+	gtk_box_pack_start(GTK_BOX(box), self->icon, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(box), self->value, FALSE, FALSE, 0);
+	gtk_container_add(GTK_CONTAINER(self->root), box);
+	gtk_container_add(root, self->root);
+	gtk_widget_show_all(self->root);
 
 	/* Bar start resets to the day preset; the broadcast then confirms it. */
 	apply_mode(self);

@@ -19,6 +19,7 @@
 
 #include "status_feed.h"
 #include "status_json.h"
+#include "waybar_config.h"
 
 const size_t wbcffi_version = 2;
 
@@ -98,23 +99,6 @@ static void on_workspace_clicked (
 	char *command = g_strdup_printf("w3ldctl workspace %d", number);
 	g_spawn_command_line_async(command, NULL);
 	g_free(command);
-}
-
-/* Copy a CFFI config value into a plain string. In ABI v2 the value is the JSON
- * representation (a string arrives quoted, e.g. "DP-1"); trim whitespace, then
- * strip the surrounding quotes. */
-static char *config_string (const char *value) {
-	if (!value)
-		return NULL;
-	while (*value == ' ' || *value == '\t' || *value == '\n' || *value == '\r')
-		value++;
-	size_t length = strlen(value);
-	while (length > 0 && (value[length - 1] == ' ' || value[length - 1] == '\t'
-			|| value[length - 1] == '\n' || value[length - 1] == '\r'))
-		length--;
-	if (length >= 2 && value[0] == '"' && value[length - 1] == '"')
-		return g_strndup(value + 1, length - 2);
-	return g_strndup(value, length);
 }
 
 void *wbcffi_init (

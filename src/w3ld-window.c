@@ -15,6 +15,7 @@
 
 #include "status_feed.h"
 #include "status_json.h"
+#include "waybar_config.h"
 
 const size_t wbcffi_version = 2;
 
@@ -24,23 +25,6 @@ typedef struct {
 	GtkWidget *label;
 	status_feed feed;
 } w3ld_window;
-
-/* Copy a CFFI config value into a plain string. In ABI v2 the value is the JSON
- * representation (a string arrives quoted, e.g. "DP-1"); trim whitespace, then
- * strip the surrounding quotes. */
-static char *config_string (const char *value) {
-	if (!value)
-		return NULL;
-	while (*value == ' ' || *value == '\t' || *value == '\n' || *value == '\r')
-		value++;
-	size_t length = strlen(value);
-	while (length > 0 && (value[length - 1] == ' ' || value[length - 1] == '\t'
-			|| value[length - 1] == '\n' || value[length - 1] == '\r'))
-		length--;
-	if (length >= 2 && value[0] == '"' && value[length - 1] == '"')
-		return g_strndup(value + 1, length - 2);
-	return g_strndup(value, length);
-}
 
 /* Does this event describe the tracked output? With no output set, follow the
  * focused output (focused == true); otherwise match the connector name. */

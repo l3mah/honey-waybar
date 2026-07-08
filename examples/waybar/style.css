@@ -45,17 +45,17 @@
 }
 
 /* ---- Gamma / night light (cffi/w3ld-gamma) ----
- * Classes: day (neutral) / night (warm), plus override when a manual
- * temperature is in effect for the active mode. */
+ * Two labels: #w3ld-gamma-icon (the glyph) and #w3ld-gamma-value (the text).
+ * The module carries the class day / night (and override when a manual
+ * temperature is in effect), so only the icon need change colour by mode. */
 #w3ld-gamma {
     padding: 0 8px;
 }
-#w3ld-gamma.day {
-    color: #bd93f9;                 /* purple: neutral / day */
+#w3ld-gamma-icon {
+    color: #bd93f9;                 /* day: purple accent */
+    margin-right: 6px;
 }
-#w3ld-gamma.night {
-    color: #ffb86c;                 /* orange: warm / night */
+#w3ld-gamma.night #w3ld-gamma-icon {
+    color: #ffb86c;                 /* night: warm accent */
 }
-#w3ld-gamma.override {
-    border-bottom: 2px solid #ffb86c;
-}
+/* #w3ld-gamma-value inherits the bar's default text colour. */
