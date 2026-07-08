@@ -20,7 +20,7 @@ maintainer="Maxence Hamel <dev@maxencehamel.com>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/l3mah/honey-waybar"
 distfiles="https://github.com/l3mah/honey-waybar/archive/refs/tags/v${version}.tar.gz"
-checksum=@REPLACE_WITH_SHA256_OF_THE_RELEASE_TARBALL@
+checksum=3319837b1ae711d048103ee3b6c09541d5aafaa85aaa7096b9f4c85d9cab8961
 
 post_install() {
 	vlicense LICENSE
