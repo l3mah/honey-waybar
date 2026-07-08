@@ -1,0 +1,27 @@
+# Template file for 'honey-waybar'
+#
+# Copy this to a void-packages checkout as srcpkgs/honey-waybar/template, then:
+#   ./xbps-src pkg honey-waybar
+#
+# At release time set `version` to the tag (without the leading v) and refresh
+# `checksum` with the sha256 of the release tarball.
+pkgname=honey-waybar
+version=0.20.0
+revision=1
+build_style=gnu-makefile
+make_build_target="all cffi"
+make_install_target="install install-cffi"
+make_install_args="PREFIX=/usr"
+hostmakedepends="pkg-config"
+makedepends="gtk+3-devel"
+depends="honey waybar"
+short_desc="Waybar modules for the honey compositor"
+maintainer="Maxence Hamel <dev@maxencehamel.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/l3mah/honey-waybar"
+distfiles="https://github.com/l3mah/honey-waybar/archive/refs/tags/v${version}.tar.gz"
+checksum=@REPLACE_WITH_SHA256_OF_THE_RELEASE_TARBALL@
+
+post_install() {
+	vlicense LICENSE
+}
